@@ -56,3 +56,15 @@ button:hover {
   outline: 3px solid #d08614;
   outline-offset: 3px;
 }
+
+button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.erro {
+  padding: 12px;
+  background: #fff0ee;
+  color: #9d2620;
+  border-radius: 5px;
+}
