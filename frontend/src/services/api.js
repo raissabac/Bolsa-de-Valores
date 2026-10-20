@@ -2,10 +2,10 @@ import { ativosMock, carteiraMock, investidorMock } from "./mockData.js";
 
 export const modoSimulado = import.meta.env.VITE_USE_MOCK !== "false";
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
-const MOCK_TOKEN = "mock-token-ana-silva";
-const USE_MOCK = true;
-let carteira = structuredClone(carteiraMock);
+const MOCK_TOKEN = "mock-token-lula-silva";
+let carteiraAtual = structuredClone(carteiraMock);
 let proximaOrdem = 1;
+const USE_MOCK = true;
 const centavos = (valor) => Math.round(valor * 100);
 const simularAtraso = () => new Promise((resolve) => setTimeout(resolve, 300));
 
@@ -22,9 +22,7 @@ async function requisicao(path, { token, ...options } = {}) {
       signal: AbortSignal.timeout(10000),
     });
   } catch {
-    if (path === "/ordens" && options.method === "POST") {
-      throw new Error("Não foi possível confirmar o envio. Confira no servidor se a ordem foi registrada antes de reenviar.");
-    }
+    if (path === "/ordens" && options.method === "POST") throw new Error("Não foi possível confirmar o envio. Confira no servidor se a ordem foi registrada antes de reenviar.");
     throw new Error("Não foi possível acessar o servidor. Confira a conexão e tente novamente.");
   }
   const data = await response.json().catch(() => null);
@@ -48,7 +46,8 @@ export async function login(email, senha) {
   }
   await simularAtraso();
   if (email !== investidorMock.email || !senha) throw new Error("E-mail ou senha inválidos.");
-  carteira = structuredClone(carteiraMock);
+
+  carteiraAtual = structuredClone(carteiraMock);
   proximaOrdem = 1;
   return { access_token: MOCK_TOKEN, token_type: "bearer", investidor: investidorMock };
 }
@@ -63,34 +62,94 @@ export async function getCarteira(token) {
   if (!modoSimulado) return requisicao("/carteira", { token });
   await simularAtraso();
   validarToken(token);
-  return structuredClone(carteira);
+  return structuredClone(carteiraAtual);
 }
 
-export async function enviarOrdem(token, ordem) {
-  if (!modoSimulado) {
-    return requisicao("/ordens", { method: "POST", token, body: JSON.stringify(ordem) });
-  }
-  await simularAtraso();
-  validarToken(token);
-  const { ativo_codigo, tipo_operacao, quantidade, preco_limite } = ordem;
-  if (!ativosMock.some((ativo) => ativo.codigo === ativo_codigo)) throw new Error("Ativo inválido.");
-  if (!["compra", "venda"].includes(tipo_operacao)) throw new Error("Operação inválida.");
-  if (!Number.isSafeInteger(quantidade) || quantidade <= 0) throw new Error("Informe uma quantidade inteira positiva.");
-  if (!Number.isFinite(preco_limite) || preco_limite <= 0 || Math.abs(preco_limite * 100 - centavos(preco_limite)) > 0.000001) {
-    throw new Error("Informe um preço positivo com até duas casas decimais.");
-  }
-  const total = quantidade * centavos(preco_limite);
-  if (!Number.isSafeInteger(total)) throw new Error("O valor da ordem é muito alto.");
-  if (tipo_operacao === "compra") {
-    if (total > centavos(carteira.saldo_disponivel)) throw new Error("Saldo insuficiente.");
-    carteira.saldo_disponivel = (centavos(carteira.saldo_disponivel) - total) / 100;
-  } else {
-    const posicao = carteira.posicoes.find((item) => item.ativo_codigo === ativo_codigo);
-    if (!posicao || quantidade > posicao.quantidade - (posicao.quantidade_reservada || 0)) {
-      throw new Error("Quantidade de ações disponíveis insuficiente.");
+export async function enviarOrdem(
+  token,
+  { ativo_codigo, tipo_operacao, quantidade, preco_limite },
+) {
+  if (USE_MOCK) {
+    await simularAtraso();
+
+    if (token !== MOCK_TOKEN) {
+      throw new Error("Sessão inválida.");
     }
-    posicao.quantidade_reservada = (posicao.quantidade_reservada || 0) + quantidade;
+
+    if (!ativosMock.some((ativo) => ativo.codigo === ativo_codigo)) {
+      throw new Error("Ativo inválido.");
+    }
+
+    if (!["compra", "venda"].includes(tipo_operacao)) {
+      throw new Error("Operação inválida.");
+    }
+
+    if (!Number.isSafeInteger(quantidade) || quantidade <= 0) {
+      throw new Error("Informe uma quantidade inteira positiva.");
+    }
+
+    const precoCentavos = Math.round(preco_limite * 100);
+
+    if (
+      !Number.isFinite(preco_limite) ||
+      precoCentavos <= 0 ||
+      Math.abs(preco_limite * 100 - precoCentavos) > 0.000001
+    ) {
+      throw new Error("Informe um preço positivo com até duas casas decimais.");
+    }
+
+    const totalCentavos = quantidade * precoCentavos;
+
+    if (!Number.isSafeInteger(totalCentavos)) {
+      throw new Error("O valor da ordem é muito alto.");
+    }
+
+    if (tipo_operacao === "compra") {
+      const saldoCentavos = Math.round(
+        carteiraAtual.saldo_disponivel * 100,
+      );
+
+      if (totalCentavos > saldoCentavos) {
+        throw new Error("Saldo insuficiente.");
+      }
+
+      carteiraAtual.saldo_disponivel =
+        (saldoCentavos - totalCentavos) / 100;
+    } else {
+      const posicao = carteiraAtual.posicoes.find(
+        (item) => item.ativo_codigo === ativo_codigo,
+      );
+
+      const disponivel = posicao
+        ? posicao.quantidade - (posicao.quantidade_reservada || 0)
+        : 0;
+
+      if (quantidade > disponivel) {
+        throw new Error("Quantidade de ações disponíveis insuficiente.");
+      }
+
+      posicao.quantidade_reservada =
+        (posicao.quantidade_reservada || 0) + quantidade;
+    }
+
+    return {
+      id: proximaOrdem++,
+      ativo_codigo,
+      tipo_operacao,
+      quantidade,
+      preco_limite,
+      status: "registrada",
+    };
   }
-  // ainda não executa negociações
-  return { id: proximaOrdem++, ...ordem, status: "registrada", mensagem: "Ordem registrada na simulação." };
+
+  return requisicao("/ordens", {
+    method: "POST",
+    token,
+    body: JSON.stringify({
+      ativo_codigo,
+      tipo_operacao,
+      quantidade,
+      preco_limite,
+    }),
+  });
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAtivos, getCarteira } from "../services/api.js";
+import FormularioOrdem from "./FormularioOrdem.jsx";
 
 function moeda(valor) {
   return new Intl.NumberFormat("pt-BR", {
@@ -137,6 +138,7 @@ export default function Painel({ sessao, onSair }) {
                       <th scope="col">Ativo</th>
                       <th scope="col">Empresa</th>
                       <th scope="col">Quantidade</th>
+                      <th scope="col">Disponível para venda</th>
                       <th scope="col">Preço médio</th>
                     </tr>
                   </thead>
@@ -146,6 +148,7 @@ export default function Painel({ sessao, onSair }) {
                         <td>{posicao.ativo_codigo}</td>
                         <td>{posicao.ativo_nome}</td>
                         <td>{posicao.quantidade}</td>
+                        <td>{posicao.quantidade - (posicao.quantidade_reservada || 0)}</td>
                         <td>{moeda(posicao.preco_medio)}</td>
                       </tr>
                     ))}
@@ -155,6 +158,15 @@ export default function Painel({ sessao, onSair }) {
             )}
           </section>
         </>
+      )}
+
+      {carteira && (
+        <FormularioOrdem
+          ativos={ativos}
+          token={sessao.access_token}
+          atualizando={carregando}
+          onRegistrada={() => setConsulta((valor) => valor + 1)}
+        />
       )}
     </main>
   );
