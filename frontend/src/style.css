@@ -68,3 +68,95 @@ button:disabled {
   color: #9d2620;
   border-radius: 5px;
 }
+
+.painel {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.cabecalho h1 {
+  margin-bottom: 8px;
+}
+
+.cabecalho p {
+  margin: 0;
+}
+
+.cabecalho button,
+.acoes-painel button {
+  width: auto;
+  margin: 0;
+}
+
+.acoes-painel {
+  margin-bottom: 20px;
+}
+
+.aviso {
+  padding: 12px;
+  background: #fff3d9;
+  color: #624512;
+  border-radius: 5px;
+}
+
+.resumo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card {
+  min-width: 0;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: white;
+  border: 1px solid #dce2ea;
+  border-radius: 8px;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.valor {
+  margin: 0;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.tabela {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 12px;
+  border-bottom: 1px solid #dce2ea;
+}
+
+th {
+  background: #f3f5f8;
+}
+
+@media (max-width: 640px) {
+  .resumo {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

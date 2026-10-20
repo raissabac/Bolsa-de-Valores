@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Login from "./components/Login.jsx";
+import Painel from "./components/Painel.jsx";
 import "./style.css";
 
 export default function App() {
@@ -10,12 +11,9 @@ export default function App() {
   }
 
   return (
-    <main className="login">
-      <h1>Home Broker</h1>
-      <p>Bem-vindo, {sessao.investidor.nome}.</p>
-      <button type="button" onClick={() => setSessao(null)}>
-        Sair
-      </button>
-    </main>
+    <Painel
+      sessao={sessao}
+      onSair={() => setSessao(null)}
+    />
   );
 }
