@@ -235,6 +235,12 @@ export async function enviarOrdem(
   };
 }
 
+export async function getOrdensAbertas() {
+  if (modoSimulado) return [];
+
+  return requisicao("/ordens/abertas");
+}
+
 export async function logout(token) {
   if (modoSimulado) {
     await simularAtraso();

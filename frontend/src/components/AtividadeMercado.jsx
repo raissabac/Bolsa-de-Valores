@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { modoSimulado } from "../services/api.js";
+import { getOrdensAbertas, modoSimulado } from "../services/api.js";
 import { conectarMercado } from "../services/websocket.js";
 
 function moeda(valor) {
@@ -15,9 +15,18 @@ export default function AtividadeMercado() {
   const [erro, setErro] = useState("");
 
   useEffect(() => {
-    if (modoSimulado) {
-      return;
-    }
+    // Busca o livro de ofertas atual (ordens abertas antes de conectar)
+    getOrdensAbertas()
+      .then((abertas) => {
+        if (abertas.length > 0) {
+          setEventos(abertas.slice(0, 20));
+        }
+      })
+      .catch(() => {
+        // Falha silenciosa: o WebSocket ainda traz atualizações em tempo real
+      });
+
+    if (modoSimulado) return;
 
     let encerrado = false;
     let conexao;
@@ -102,7 +111,7 @@ export default function AtividadeMercado() {
       )}
 
       <p>
-        Últimas 20 ordens recebidas enquanto esta tela está conectada.
+        Ordens abertas no momento do acesso e novas ordens em tempo real.
         Os eventos não representam negociações executadas.
       </p>
 

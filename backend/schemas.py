@@ -56,3 +56,13 @@ class OrdemResponse(BaseModel):
     status: str
     mensagem: str
     data_registro: str
+
+
+class OrdemAbertaSchema(BaseModel):
+    ordem_id: int
+    ativo_codigo: str
+    tipo_operacao: str
+    quantidade: int
+    preco_limite: float
+    status: str
+    data_registro: str

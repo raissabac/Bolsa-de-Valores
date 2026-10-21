@@ -15,6 +15,7 @@ from schemas import (
     InvestidorSchema,
     LoginRequest,
     LoginResponse,
+    OrdemAbertaSchema,
     OrdemRequest,
     OrdemResponse,
     PosicaoSchema,
@@ -29,8 +30,8 @@ security = HTTPBearer(auto_error=False)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -214,6 +215,31 @@ async def registrar_ordem(
         mensagem="Ordem registrada com sucesso",
         data_registro=data_registro,
     )
+
+
+
+@app.get("/ordens/abertas", response_model=list[OrdemAbertaSchema])
+def listar_ordens_abertas(db: Session = Depends(get_db)):
+    """Retorna todas as ordens com status REGISTRADA (livro de ofertas público)."""
+    ordens = (
+        db.query(Ordem)
+        .options(joinedload(Ordem.ativo))
+        .filter(Ordem.status == "REGISTRADA")
+        .order_by(Ordem.data_criacao.desc())
+        .all()
+    )
+    return [
+        OrdemAbertaSchema(
+            ordem_id=ordem.id,
+            ativo_codigo=ordem.ativo.codigo,
+            tipo_operacao=ordem.tipo_operacao,
+            quantidade=ordem.quantidade,
+            preco_limite=float(ordem.preco_limite),
+            status=ordem.status,
+            data_registro=ordem.data_criacao.isoformat(),
+        )
+        for ordem in ordens
+    ]
 
 
 @app.websocket("/ws")
