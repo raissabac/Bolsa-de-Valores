@@ -3,7 +3,7 @@ import { ativosMock, carteiraMock, investidorMock } from "./mockData.js";
 export const modoSimulado = import.meta.env.VITE_USE_MOCK !== "false";
 
 const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"
+  import.meta.env.VITE_API_BASE_URL || "/api"
 ).replace(/\/$/, "");
 
 const MOCK_TOKEN = "mock-token-lula-silva";
