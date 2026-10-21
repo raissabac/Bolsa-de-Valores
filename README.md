@@ -92,8 +92,6 @@ A arquitetura distribuída será documentada de acordo com os componentes, servi
 - Persistência e recuperação de estado.
 - Implantação em contêineres.
 
-*Diagrama de arquitetura: a adicionar.*
-
 ## 🗃️ Persistência e banco de dados
 
 O sistema deverá armazenar as informações necessárias ao funcionamento do mercado, incluindo:
@@ -110,7 +108,6 @@ A modelagem e a tecnologia de persistência serão documentadas conforme as deci
 
 ## 🛠️ Tecnologias utilizadas
 
-*Seção a atualizar com as linguagens, frameworks, banco de dados, protocolos e ferramentas efetivamente adotados pelo grupo.*
 
 ## 🧪 Testes e validação
 
@@ -122,8 +119,6 @@ O projeto prevê testes para verificar tanto o funcionamento das operações qua
 - Testes de comunicação e sincronização.
 - Testes de desconexão e recuperação.
 - Análise de logs e métricas de desempenho.
-
-## 🚀 Instalação e execução
 
 ## 🚀 Instalação e execução
 
