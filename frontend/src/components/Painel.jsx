@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getAtivos, getCarteira } from "../services/api.js";
 import FormularioOrdem from "./FormularioOrdem.jsx";
+import AtividadeMercado from "./AtividadeMercado.jsx";
 
 function moeda(valor) {
   return new Intl.NumberFormat("pt-BR", {
@@ -219,6 +220,7 @@ export default function Painel({ sessao, onSair }) {
           </div>
         )}
       </section>
+      <AtividadeMercado />
     </main>
   );
 }
