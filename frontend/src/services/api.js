@@ -234,3 +234,16 @@ export async function enviarOrdem(
     data_registro: resposta.data_registro,
   };
 }
+
+export async function logout(token) {
+  if (modoSimulado) {
+    await simularAtraso();
+    validarToken(token);
+    return;
+  }
+
+  await requisicao("/auth/logout", {
+    method: "POST",
+    token,
+  });
+}

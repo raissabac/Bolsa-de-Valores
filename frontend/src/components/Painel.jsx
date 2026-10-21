@@ -10,7 +10,12 @@ function moeda(valor) {
   }).format(valor);
 }
 
-export default function Painel({ sessao, onSair }) {
+  export default function Painel({
+    sessao,
+    onSair,
+    saindo,
+    erroSaida,
+  }) {
   const [ativos, setAtivos] = useState([]);
   const [carteira, setCarteira] = useState(null);
   const [carregando, setCarregando] = useState(true);
@@ -66,10 +71,16 @@ export default function Painel({ sessao, onSair }) {
           <p>Investidor: {sessao.investidor.nome}</p>
         </div>
 
-        <button type="button" onClick={onSair}>
-          Sair
+        <button type="button" onClick={onSair} disabled={saindo}>
+          {saindo ? "Saindo..." : "Sair"}
         </button>
       </header>
+
+      {erroSaida && (
+        <p className="erro" role="alert">
+          {erroSaida}
+        </p>
+      )}
 
       <div className="acoes-painel">
         <button
