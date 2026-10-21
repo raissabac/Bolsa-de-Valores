@@ -15,6 +15,7 @@ export default function Painel({ sessao, onSair }) {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [consulta, setConsulta] = useState(0);
+  const [ordens, setOrdens] = useState([]);
 
   useEffect(() => {
     let cancelado = false;
@@ -50,6 +51,11 @@ export default function Painel({ sessao, onSair }) {
       cancelado = true;
     };
   }, [sessao.access_token, consulta]);
+
+  function registrarOrdem(ordem) {
+    setOrdens((anteriores) => [ordem, ...anteriores]);
+    setConsulta((valor) => valor + 1);
+  }
 
   return (
     <main className="painel">
@@ -146,7 +152,7 @@ export default function Painel({ sessao, onSair }) {
                     {carteira.posicoes.map((posicao) => (
                       <tr key={posicao.ativo_codigo}>
                         <td>{posicao.ativo_codigo}</td>
-                        <td>{posicao.ativo_nome}</td>
+                        <td>{ativos.find((ativo) => ativo.codigo === posicao.ativo_codigo,)?.nome || posicao.ativo_codigo}</td>
                         <td>{posicao.quantidade}</td>
                         <td>{posicao.quantidade - (posicao.quantidade_reservada || 0)}</td>
                         <td>{moeda(posicao.preco_medio)}</td>
@@ -165,9 +171,54 @@ export default function Painel({ sessao, onSair }) {
           ativos={ativos}
           token={sessao.access_token}
           atualizando={carregando}
-          onRegistrada={() => setConsulta((valor) => valor + 1)}
+          onRegistrada={registrarOrdem}
         />
       )}
+
+      <section className="card">
+        <h2>Ordens enviadas nesta sessão</h2>
+
+        <p>
+          Ordens registradas aguardam processamento. Esta lista mostra apenas
+          os envios confirmados desde sua entrada no painel.
+        </p>
+
+        {ordens.length === 0 ? (
+          <p>Nenhuma ordem enviada nesta sessão.</p>
+        ) : (
+          <div className="tabela">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Ativo</th>
+                  <th scope="col">Operação</th>
+                  <th scope="col">Quantidade</th>
+                  <th scope="col">Preço limite</th>
+                  <th scope="col">Estado</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {ordens.map((ordem) => (
+                  <tr key={ordem.id}>
+                    <td>{ordem.id}</td>
+                    <td>{ordem.ativo_codigo}</td>
+                    <td>
+                      {ordem.tipo_operacao.toLowerCase() === "compra"
+                        ? "Compra"
+                        : "Venda"}
+                    </td>
+                    <td>{ordem.quantidade}</td>
+                    <td>{moeda(ordem.preco_limite)}</td>
+                    <td>{ordem.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </main>
   );
 }

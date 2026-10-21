@@ -36,7 +36,7 @@ export default function FormularioOrdem({
       );
       setQuantidade("");
       setPreco("");
-      onRegistrada();
+      onRegistrada(ordem);
     } catch (error) {
       setErro(error.message);
     } finally {
